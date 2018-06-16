@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>星歌声分组</title>
+
+<script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/js/jquery.min.js"></script>
+<script type="text/javascript" src="{:ADDON_PUBLIC_PATH}/js/layer/mobile/layer.js"></script>
+
+<style>
+*{margin:0;padding:0;}
+img{display:block;}
+i{font-style:normal;}
+.vetically{justify-content:center;align-items:center;display:-webkit-flex;}
+.prize_con{position: absolute;width: 100%;height: 100%;background: url(/Addons/EarthquakeExam/View/default/Public/img/firstp_bg.jpg) no-repeat left top / 100% 100%;overflow: hidden;}
+.prize_grade{font-size:98px;color: #ffe9af;text-align: center;margin: 60px auto 0;}
+.prize_list{width:55%;height:300px;margin: 20px auto 55px;text-align: center;overflow: hidden; }
+.prize_list ul{ width:100%;font-size:0; }
+.prize_list li{ display:inline-block; padding:10px;font-size:35px;color:#f1bf90;text-align: center; line-height:40px;font-family:Arial;}
+
+.prize_set{position: absolute;right: 60px;bottom:140px;font-size: 16px;color: #f7f3e8;line-height: 30px;}
+.prize_set li{display: inline-block; margin-left: 20px;}
+.set_grade select,.set_people input, .set_money input{background: #fff;width:110px;height:36px;border:1px solid #8f0000;margin-left: .1rem;color: #000;padding-left:10px;}
+
+
+.userbox{width:55%;height:260px; margin: 20px auto 55px;text-align: center;overflow: hidden;  padding: 20px;}
+.userbox ul{width:100%; font-size:0; }
+.userbox li{display:inline-block; padding:10px; font-size:20px;color:#f1bf90; text-align: center; line-height:20px;font-family:Arial;}
+
+.resultuser{width:55%;height:260px; margin: 20px auto 55px;text-align: center;overflow: hidden;  padding: 20px; display: none;}
+.resultuser ul{width:100%; font-size:0; }
+.resultuser li{display:inline-block; padding:10px; font-size:24px;color:#f1bf90; text-align: center; line-height:40px;font-family:Arial;}
+
+.start{width: 250px;height: 90px; margin:0 auto; cursor:pointer;}
+.reset{
+  width: 120px; height: 30px; background-color: #fbda97; margin: 0 auto;
+  border-radius: 20px; color: #000; text-align: center; line-height: 30px;
+  font-size: 16px; cursor: pointer; letter-spacing: 5px;
+}
+/*LAYER */
+body .mas-layer {
+  width:80%;
+  height:auto;
+  background-color: rgba(255,255,255,0.8);
+    border-radius: 10px;
+    color:#000;
+}
+
+body .mas-layer .layui-m-layercont{
+    font-size: 20px;
+    line-height: 28px;
+}
+
+body .mas-layer .layui-m-layerbtn{
+    border-top: 1px solid #1fb658;
+    height: 4rem;
+    line-height: 4rem;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+}
+body .mas-layer .layui-m-layerbtn span{
+    font-size: 1.8rem;
+    border-radius: 0 0 10px 10px;
+}
+body .layui-m-layer0 .layui-m-layerchild{
+    max-width: 400px;
+}
+
+
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <div class="prize_con">
+      <p class="prize_grade"><span>开始分组</span></p>
+        <div class="userbox">
+          <ul id="userlist"></ul>
+        </div>
+        <div class="resultuser">
+          <ul id="resultlist"></ul>
+        </div>
+        <div class="prize_list vetically">
+          <ul id="list">
+           
+          </ul>
+        </div>
+      <p class="start"><img id="startBtn" src="{:ADDON_PUBLIC_PATH}/images/prize_start.png" alt=""></p>
+       
+      <ul class="prize_set">
+        <li>
+          <p class="reset">重置</p>
+        </li>
+          <li class="set_grade">组次
+            <select id="set_grade">
+              <option>选择组次</option>              
+              <option data-id="1">第一组</option>
+              <option data-id="2">第二组</option>
+              <option data-id="3">第三组</option>
+              <option data-id="4">第四组</option>
+            </select>
+          </li>
+            <input type="hidden" value="0" id="prize_btn">
+      </ul>
+  </div>
+</div>
+
+<script>
+  var myNumber;
+  var arr = [];
+  // var radomarr=[];
+  var code = {$users};
+  localStorage.setItem("user",null);
+  localStorage.setItem('user',JSON.stringify(code));
+
+  // console.log(localStorage.getItem('user'));
+
+  (function(){
+    var li = "";
+    $.each(code,function(index,el,code){
+      
+      li += '<li data-id="'+el.no+'">'+el.username+'</li>';
+      
+    });
+    $(".prize_list").hide();
+    $(".userbox").show();
+    $("#userlist").html(li);
+    $("#prize_btn").val(0);
+  })();
+  /*随机所有的code并且不重复*/
+  function showRandomNum(num) {
+    var _user = JSON.parse(localStorage.getItem("user"));
+    var li = "";
+    for(var i = 0; i < _user.length; i++){
+      arr[i] = i;
+    }
+    arr.sort(function(){
+      return 0.5 - Math.random();
+    });
+
+    for(var i = 0; i < num; i++){
+      var index = arr[i];
+      li += '<li data-id="'+_user[index].no+'">'+_user[index].username+'</li>';
+    }
+
+    $(".prize_list ul").html(li);
+  }
+
+  $(function () {
+    $(".reset").on("click",function(){
+      var _load;
+        $.ajax({
+            type: 'POST',
+            url: 'http://wx.masrbs.com/index.php?s=/addon/FormApply/FormApply/resetgroup',
+            dataType:'json',
+            data:'',
+            beforeSend:function(){   
+               _load = layer.open({type:2,content:'重置分组中...'});  
+            },
+            success: function(result){
+              layer.close(_load);
+              
+              layer.open({className:'mas-layer', content: result.message, time:2, shadeClose: true});
+              
+                window.location.reload();
+
+            },
+            error:function(ret){
+              layer.close(_load);
+              layer.open({className:'mas-layer', content: '重置失败!', time:2, shadeClose: true});
+            }
+          });
+    });
+ 
+    $(".start").click(function(){    
+      $(".prize_grade span").text($("#set_grade option:selected").text());  
+      if($("#prize_btn").val() == 0){        
+        if($("#set_grade").val() == "选择组次") {
+            layer.open({className:'mas-layer', content: '请选择组次', time:2, shadeClose: true});
+            return;
+        }else{
+          $(".prize_list").show();
+          $(".userbox").hide();
+          $(".resultuser").hide();
+          $("#prize_btn").val(1);
+          var grade = $("#set_grade option:selected").data("id");
+          var num = 0;
+          switch(grade){
+          	case 1:
+	          	num=15;
+	          	break;
+	          case 2:
+	        	  num=16;
+	          	break;
+	          case 3:
+	        	  num=15;
+	          	break;
+	          case 4:
+	        	  num=16;
+	          	break;
+          }
+          $(this).find("img").attr("src","/Addons/FormApply/View/default/Public/images/prize_stop.png");
+
+          myNumber = setInterval(function(){
+            showRandomNum(num);
+          }, 30);
+        }        
+      }else{
+        $("#prize_btn").val(0);
+        clearInterval(myNumber);
+        var grade = $("#set_grade option:selected").data("id");
+        var lists = [];
+        $("#list li").each(function(){
+          lists.push($(this).data('id'));
+        });
+        var ids = JSON.stringify(lists);
+        var _load;
+        $.ajax({
+            type: 'POST',
+            url: 'http://wx.masrbs.com/index.php?s=/addon/FormApply/FormApply/savegroup',
+            dataType:'json',
+            data:{grade:grade,ids:ids},
+            beforeSend:function(){   
+               _load = layer.open({type:2,content:'生成编号中...'});  
+               console.log(grade);    
+            },
+            success: function(result){
+              layer.close(_load);
+              
+              if(result.code == 100){
+                layer.open({className:'mas-layer', content: '保存成功', time:2, shadeClose: true});
+                
+                var li = "";
+                var $data = result.data;
+                //add grouped user to list
+                var $user = JSON.parse(localStorage.getItem("user"));
+                $.each($data,function(index,el,$data){   
+                  li += '<li>'+el.index+"号："+el.username+'</li>';
+                  //从缓存中删除已分组的用户
+                  var no = el.no;
+                  
+                  $user.forEach(function(value,index,array){
+                      if(value['no'] == no){
+                        $user.splice(index,1);                        
+                      }
+                      for(var j=0; j<arr.length; j++){
+                        if(arr[j] == value['id']){
+                          arr.splice(j,1);
+                        }
+                      }
+                  });
+                });
+                localStorage.setItem('user',JSON.stringify($user));
+                $("#resultlist").html(li);
+                $(".userbox").hide();
+                $(".prize_list").hide();
+                $(".resultuser").show();
+                
+              }else{
+                layer.open({className:'mas-layer', content: result.message, time:2, shadeClose: true});
+              }
+              $("#startBtn").attr("src","/Addons/FormApply/View/default/Public/images/prize_start.png");
+              //window.location.reload();
+            },
+            error:function(ret){
+              layer.close(_load);
+              $("#startBtn").attr("src","/Addons/FormApply/View/default/Public/images/prize_start.png");
+              layer.open({className:'mas-layer', content: '保存失败!', time:2, shadeClose: true});
+            }
+          });
+      }      
+    });
+
+    //回车键控制开始和停止
+    $(document).keydown(function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 13) { // enter 键
+            $(".start").click();
+        }
+    });
+
+    $("#set_grade").change(function(){
+      $(".prize_grade span").text($(this).val());
+    });
+}); 
+</script>
+
+</body>
+</html>
